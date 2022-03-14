@@ -33,14 +33,15 @@
             <h3 class="box-title"></h3>
             <button onClick="return printR()" class="btn btn-sm btn-info pull-right" ><i class="fa fa-printer"></i>Print</button>
           </div>
-		  <li><a href="?id = $id&"></i> Pass</a></li>
-<li><a href="?id = $id&"></i> Fail</a></li>
-          <div class="box-body">
+            <b>Filter:</b> <a class="btn btn-success btn-sms" href="?id={{$id}}&type=pass"></i> Pass</a>
+            <a  class="btn btn-danger btn-sms" href="?id={{$id}}&type=fail"></i> Fail</a>
+        </ul>
+        <div class="box-body">
         <div id="myDiv" class="box-body table-responsive no-padding">
         <h3 class="box-title">General Exam Reports 2021</h3>
 		
               <!--tbl -->
-                <table  id="example" class="table table-bordered table-striped">
+            <table  id="example" class="table table-bordered table-striped">
                 <thead><tr>
                  <th>#.</th>
                  <th>RegNo.</th>
@@ -57,36 +58,38 @@
 			
 
                 @foreach($results as $result)
-				@if(request()-> get('type')=='fail'&&$tots<40)
+                @php $tots=0;$count=0;@endphp
+                @if(count($result->studentExam) > 0)
+                    @foreach($result->studentExam as $exam)
+                    @if($exam->courseCode == $id)
+                      @php $tots+=$exam->marks;@endphp
+                      @php $count+=1;@endphp
+                      
+                    @endif
+                    @endforeach
+                  @endif
+				@if(request()->get('type') == 'fail' && $tots < 40)
+        @php $fails += 1;@endphp
                 <tr>
                  <td><button type="button" class="btn btn-default" data-toggle="modal" data-target="#report-{{ $result->id}}">{{ $result->id}}.</button></td>
                  <td>{{ $result->regNo}}</td>
                  <td>{{ $result->surName}}</td>
-                 @php $tots=0;$count=0;@endphp
                  <td>@if(count($result->studentExam) > 0)
+                 @php $totals = 0;@endphp
                         @foreach($result->studentExam as $exam)
                         @if($exam->courseCode == $id)
                           @php $tots+=$exam->marks;@endphp
                           @php $count+=1;@endphp
-                          {{$exam->marks}}%
+                          
                         @endif
                         @endforeach
+                        {{$totals}}%
+                        @php $tots+=$totals;@endphp
                      @endif
                     </td>
                   <td>2021</td>
                 <td>
-                  @if(count($result->studentExam) > 0)
-                    @if($tots/$count >= 40)
-                    @php $passes += 1;@endphp
-                    <span class="text-success">Pass</span>
-                    @else
-                    @php $fails += 1;@endphp
                     <span class="text-danger">Fail</span>
-                    @endif
-                  @else
-                    @php $na += 1;@endphp
-                    <span class="text-warning">N/A</span>
-                  @endif
                 </td>
                 
                 <!-- modal -->
@@ -126,37 +129,30 @@
                 </div>
                 <!-- ./modal -->
                 </tr>
-				@elseif(request()-> get('type')=='pass'&&$tots>=40)
-				
+				@elseif(request()->get('type') == 'pass' && $tots >= 40)
+				@php $passes += 1;@endphp
 				  <tr>
                  <td><button type="button" class="btn btn-default" data-toggle="modal" data-target="#report-{{ $result->id}}">{{ $result->id}}.</button></td>
                  <td>{{ $result->regNo}}</td>
                  <td>{{ $result->surName}}</td>
-                 @php $tots=0;$count=0;@endphp
+                 
                  <td>@if(count($result->studentExam) > 0)
+                   @php $totals = 0;@endphp
                         @foreach($result->studentExam as $exam)
                         @if($exam->courseCode == $id)
-                          @php $tots+=$exam->marks;@endphp
+                          
+                          @php $totals+=$exam->marks;@endphp
                           @php $count+=1;@endphp
-                          {{$exam->marks}}%
+                          
                         @endif
                         @endforeach
+                        @php $tots+=$totals;@endphp
+                        {{$totals}}%
                      @endif
                     </td>
                   <td>2021</td>
                 <td>
-                  @if(count($result->studentExam) > 0)
-                    @if($tots/$count >= 40)
-                    @php $passes += 1;@endphp
                     <span class="text-success">Pass</span>
-                    @else
-                    @php $fails += 1;@endphp
-                    <span class="text-danger">Fail</span>
-                    @endif
-                  @else
-                    @php $na += 1;@endphp
-                    <span class="text-warning">N/A</span>
-                  @endif
                 </td>
                 
                 <!-- modal -->
@@ -196,13 +192,15 @@
                 </div>
                 <!-- ./modal -->
                 </tr>
-				@endif
+        @endif
 				
 				</tbody>
                 @endforeach
+                @if(request()->get('type') == 'pass')
                 <h4><b>Passes:</b> {{ $passes }}</h4>
+                @elseif(request()->get('type') == 'fail')
                 <h4><b>Fails:</b> {{ $fails }}</h4>
-                <h4><b>N/A:</b> {{ $na }}</h4>
+                @endif
                 <tfoot>
                     <tr>
                     <th>#.</th>
